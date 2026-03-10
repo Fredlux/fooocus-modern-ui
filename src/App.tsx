@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Settings, History, Sparkles, Image as ImageIcon, Download, RefreshCw } from 'lucide-react'
+import { Settings, History, Sparkles, Download, RefreshCw, Upload } from 'lucide-react'
 import { Button } from './components/ui/button'
 import { Input } from './components/ui/input'
 import { Card } from './components/ui/card'
@@ -19,6 +19,15 @@ function App() {
   const [cfgScale, setCgfScale] = useState(5)
   const [isGenerating, setIsGenerating] = useState(false)
   const [resultImage, setResultImage] = useState<string | null>(null)
+  const [useImageInput, setUseImageInput] = useState(false)
+  const [imageInput, setImageInput] = useState<File | null>(null)
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageInput(e.target.files[0])
+      setUseImageInput(true)
+    }
+  }
 
   const handleGenerate = () => {
     if (!prompt) return
@@ -34,10 +43,26 @@ function App() {
     setPrompt('')
     setNegativePrompt('')
     setResultImage(null)
+    setImageInput(null)
+    setUseImageInput(false)
   }
 
   const handleDownload = () => {
-    // Download logic here
+    if (resultImage) {
+      const link = document.createElement('a')
+      link.href = resultImage
+      link.download = `fooocus-result-${Date.now()}.png`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
+  }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageInput(e.target.files[0])
+      setUseImageInput(true)
+    }
   }
 
   return (
@@ -87,6 +112,34 @@ function App() {
               placeholder="What to avoid..."
               className="glass-input min-h-[60px] resize-none text-sm"
             />
+          </Card>
+
+          {/* Image Input Toggle */}
+          <Card className="glass-panel p-6">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">Use Image as Reference</Label>
+              <Switch
+                checked={useImageInput}
+                onCheckedChange={setUseImageInput}
+              />
+            </div>
+            {useImageInput && (
+              <div className="mt-4">
+                <div className="flex gap-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="glass-input"
+                  />
+                  {imageInput && (
+                    <span className="text-xs text-primary flex items-center">
+                      {imageInput.name}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
           </Card>
 
           {/* Styles */}
